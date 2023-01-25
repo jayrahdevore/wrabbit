@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "wrabbit"
+version = "0.1.0"
+description = "Wrap pydantic types into RabbitMQ queues"
+authors = ["Jayrah DeVore <7108859+jayrahdevore@users.noreply.github.com>"]
+readme = "README.md"
+packages = [{include = "wrabbit"}]
+
+
+[tool.poetry.dependencies]
+python = ">=3.10"
+pika = ">=1.3.0"
+pydantic = ">=1.10.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
