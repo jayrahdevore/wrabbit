@@ -4,10 +4,8 @@ wrabbit.py | wrap pydantic BaseModel with RabbitMQ message queueing
 
 """
 
-from typing import Callable, Union, Type
-from enum import Enum
+from typing import Callable
 import inspect
-import asyncio
 import pydantic
 import pika  # type: ignore
 
@@ -176,35 +174,43 @@ class Consumer:
         """set up blocking listener for callbacks"""
         self._channel.start_consuming()
 
-    def run_on_recieve(self, func: Callable) -> None:
+    def run_on_recieve(
+            self,
+            **run_on_recieve_kwargs,
+            ) -> Callable:
         """set up callable for argument type
         valid functions contained a typed annotation
         for a wrabbit BaseModel, or a union of such
+        Overrides are passed into the setup
 
         For example:
 
         app = wrabbit.Consumer(HOST)
         assert isinstance(MyModel, wrabbit.BaseModel)
 
-        @app.run_on_recieve
+        @app.run_on_recieve()
         def do_something_with_mymodel(data: MyModel) -> None:
             ...
             pass
         """
-        types = inspect.get_annotations(func)
 
-        if 'return' in types:
-            if types['return'] is not None:
-                raise ValueError(f"Return value of callback {func.__name__} must be None")
-            types.pop('return')
+        def set_up_run(func: Callable) -> None:
+            ''' adds run_on_recieve callback '''
+            types = inspect.get_annotations(func)
 
-        # check to see if function is valid
-        if len(types) != 1:
-            raise ValueError(
-                f"wrabbit run_on_recieve function {func.__name__} can only have one argument"
-            )
+            if 'return' in types:
+                if types['return'] is not None:
+                    raise ValueError(f"Return value of callback {func.__name__} must be None")
+                types.pop('return')
 
-        for model_type in types.values():
-            # add callback to each type
-            model_type.run_on_recieve(self._channel)(func)
+            # check to see if function is valid
+            if len(types) != 1:
+                raise ValueError(
+                    f"wrabbit run_on_recieve function {func.__name__} can only have one argument"
+                )
 
+            for model_type in types.values():
+                # add callback to each type
+                model_type.run_on_recieve(self._channel, **run_on_recieve_kwargs)(func)
+
+        return set_up_run

@@ -21,43 +21,35 @@ Now we can import this type and send/recieve it with pika!
 ## Example consumer
 With this type defined, we can now set up a consumer by wrapping the callback function and listening to the channel
 ```
-import pika
+from wrabbit import Consumer
 
-connection_parameters = pika.ConnectionParameters('localhost')
-connection = pika.BlockingConnection(connection_parameters)
-channel = connection.channel()
+consumer = Consumer('localhost')
 
-@Name.run_on_recieve(channel) # here we wrap our callback function
+@consumer.run_on_recieve() # here we wrap our callback function
 def say_name(name: Name):
     ''' this function run when ever the type 'name' is recieved from the queue '''
     print(f"Hello!  My name is {name.first} {name.last}")
 
 # start listening...
-channel.start_consuming()
+consumer.run()
 ```
 
 ## Example producer
-Producers are nice and simple: simply create a channel and send the type through the pipeline
+Producers are nice and simple:
 
 ```
-import pika
+from wrabbit import Producer
 
-connection_parameters = pika.ConnectionParameters('localhost')
-connection = pika.BlockingConnection(connection_parameters)
-channel = connection.channel()
+producer = Producer('localhost')
 
 # instantiate the type and send though to the queue
-Name(first="John", last="Doe").send(channel)
+producer(Name(first="John", last="Doe"))
 
 ```
 
 
-## Limitations/Design considerations
-- Currently, **wrabbit** is designed around the assumption that each model will have one consumer (many-to-one producer-consumer design).
-Custom queue labels can be used, but by design this module attempts to abstract the need to handle queue names
-
 ## Why this package?
-**wrabbit** bakes both the producer and consumer configuration into the type.
+**wrabbit** bakes both the producer and consumer configuration into the type and abstracts pika into basic producer/consumer types
 
 ## Looking for something else?
 - [pika-pydantic](https://github.com/ttamg/pika-pydantic) 
