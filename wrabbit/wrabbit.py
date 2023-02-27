@@ -156,7 +156,7 @@ class Consumer:
         """initalizes a pika.BlockingConnection and channel"""
 
         if pika_connection_parameters_kwargs is None:
-            pika_connection_parameters_kwargs = {}
+            pika_connection_parameters_kwargs = {"heartbeat":360}
         if pika_connection_kwargs is None:
             pika_connection_kwargs = {}
         if pika_channel_kwargs is None:
