@@ -73,7 +73,7 @@ class BaseModel(pydantic.BaseModel):
         if channel_qos_kwargs is None:
             channel_qos_kwargs = {}
 
-        channel_queue_kwargs = {"exclusive": True} | channel_queue_kwargs
+        channel_queue_kwargs = {"exclusive": False, "durable": True, "auto_delete": False} | channel_queue_kwargs
         channel_qos_kwargs = {"prefetch_count": 3} | channel_qos_kwargs
 
         routing_key = routing_key_override if routing_key_override else cls.queue_name()
